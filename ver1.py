@@ -5,25 +5,6 @@ import cv2
 from openpyxl import load_workbook, Workbook
 import os
 
-# Function to crop the MRZ region from an image
-def crop_mrz_region(image_path):
-    """
-    Crops the MRZ region from the image based on predefined coordinates.
-
-    Parameters:
-    - image_path (str): Path to the image file containing the MRZ.
-
-    Returns:
-    - cropped_image: Cropped image of the MRZ region.
-    """
-    img = cv2.imread(image_path)
-    height, width = img.shape[:2]
-
-    # Define the cropping region (you may need to adjust these values)
-    mrz_region = img[int(height*0.7):height, 0:width]
-    
-    return mrz_region
-
 # Function to extract MRZ text from an image
 def extract_mrz_text(image_path):
     """
@@ -35,8 +16,8 @@ def extract_mrz_text(image_path):
     Returns:
     - str: Extracted MRZ text.
     """
-    cropped_image = crop_mrz_region(image_path)
-    mrz_text = pytesseract.image_to_string(cropped_image)
+    img = cv2.imread(image_path)
+    mrz_text = pytesseract.image_to_string(img)
     
     # Clean the OCR output to remove unnecessary lines
     mrz_text = clean_ocr_output(mrz_text)
@@ -107,7 +88,15 @@ def parse_mrz(mrz_text):
 
 # Function to clean up names by removing trailing 'K' or 'KS'
 def clean_name(name):
+    """
+    Cleans up names by removing trailing 'K' or 'KS' if they are incorrectly added.
 
+    Parameters:
+    - name (str): The name string to be cleaned.
+
+    Returns:
+    - str: Cleaned name string.
+    """
     name = name.replace('<', ' ')
     
     if name.endswith('KS'):
@@ -172,7 +161,7 @@ layout = [
     [sg.Button("Update Excel", disabled=True)]
 ]
 
-window = sg.Window("MRZ Extraction and Excel Update", layout)
+window = sg.Window("Navigator Passport OCR", layout)
 
 excel_path = 'passport_data.xlsx'
 
